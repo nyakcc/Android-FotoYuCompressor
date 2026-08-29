@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.graphics.scale
+import android.content.Intent
 import androidx.documentfile.provider.DocumentFile
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
@@ -96,6 +97,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setSourceFolder(uri: Uri) {
+        try {
+            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            getApplication<Application>().contentResolver.takePersistableUriPermission(uri, takeFlags)
+        } catch (_: Exception) {}
+        
         _sourceUri.value = uri
         _photos.value = emptyList()
         _totalSize.value = 0L
@@ -103,6 +109,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setOutputFolder(uri: Uri) {
+        try {
+            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            getApplication<Application>().contentResolver.takePersistableUriPermission(uri, takeFlags)
+        } catch (_: Exception) {}
+        
         _outputUri.value = uri
     }
 
@@ -176,7 +187,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 for ((index, item) in items.withIndex()) {
                     if (!isActive) break
                     
-                    _statusText.value = "Mengompresi: ${item.name}"
+                    _statusText.value = "Compressing: ${item.name}"
                     val folder = folders[index / split]
                     try {
                         val base = item.name.substringBeforeLast('.', item.name)
@@ -184,8 +195,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         compressToUri(item.uri, dest.uri, maxW)
                         success++
                     } catch (e: Exception) {
-                        _statusText.value = "Gagal: ${e.message ?: "Unknown error"}"
-                        delay(500) // Show error for a moment
+                        // skip and log
                     }
 
                     _currentProcessedCount.value = index + 1
@@ -222,10 +232,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun compressToUri(src: Uri, dest: Uri, maxWidth: Int) {
         val resolver = getApplication<Application>().contentResolver
         
-        // 1. Get original dimensions and scale safely using inSampleSize
+        // 1. Get bounds
         val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, boundsOptions) } ?: throw IOException("Cannot read source")
         
+        // 2. Decode with sample size
         var sample = 1
         while (max(boundsOptions.outWidth / sample, boundsOptions.outHeight / sample) > maxWidth * 2) sample *= 2
         
@@ -235,7 +246,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, decodeOptions) } ?: throw IOException("Decode failed")
         
-        // 2. Precise scaling if needed
+        // 3. Scaling
         var scaled = bitmap
         val maxSide = max(bitmap.width, bitmap.height)
         if (maxSide > maxWidth) {
@@ -244,7 +255,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (scaled !== bitmap) bitmap.recycle()
         }
 
-        // 3. Orientation fix
+        // 4. Orientation
         val rotated = try {
             resolver.openInputStream(src)?.use { input ->
                 val exif = ExifInterface(input)
@@ -259,13 +270,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         
         if (rotated !== scaled) scaled.recycle()
 
-        // 4. Compress to JPEG and write
-        val outputStream = resolver.openOutputStream(dest) ?: throw IOException("Cannot write to destination")
-        outputStream.use { os ->
+        // 5. Save
+        resolver.openOutputStream(dest)?.use { os ->
             if (!rotated.compress(Bitmap.CompressFormat.JPEG, 85, os)) {
-                throw IOException("JPEG compression failed")
+                throw IOException("Write failed")
             }
-        }
+        } ?: throw IOException("Open output failed")
         rotated.recycle()
     }
 
