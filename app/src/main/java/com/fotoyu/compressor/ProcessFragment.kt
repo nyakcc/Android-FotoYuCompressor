@@ -1,6 +1,5 @@
 package com.fotoyu.compressor
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,14 +26,12 @@ class ProcessFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         binding.btnCancel.setOnClickListener { viewModel.stopProcessing() }
-        binding.btnBack.setOnClickListener { activity?.onBackPressed() }
+        binding.btnBack.setOnClickListener { (activity as? MainActivity)?.hideProcessOverlay() }
 
         observeViewModel()
     }
 
     private fun observeViewModel() {
-        val black = ColorStateList.valueOf(requireContext().getColor(R.color.black))
-
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.progress.collectLatest { 
                 binding.progressIndicator.progress = it
@@ -51,7 +48,11 @@ class ProcessFragment : Fragment() {
             viewModel.isProcessing.collectLatest { processing ->
                 binding.btnCancel.text = if (processing) "BATALKAN" else "SELESAI"
                 binding.btnCancel.setOnClickListener { 
-                    if (processing) viewModel.stopProcessing() else activity?.onBackPressed() 
+                    if (processing) {
+                        viewModel.stopProcessing()
+                    } else {
+                        (activity as? MainActivity)?.hideProcessOverlay()
+                    }
                 }
             }
         }

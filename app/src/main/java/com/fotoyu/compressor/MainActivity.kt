@@ -2,12 +2,16 @@ package com.fotoyu.compressor
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.fotoyu.compressor.databinding.ActivityMainBinding
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
@@ -24,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         setupViewPager()
         setupBottomNav()
+        observeProcessing()
     }
 
     private fun setupViewPager() {
@@ -41,6 +46,45 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+    }
+
+    private fun observeProcessing() {
+        lifecycleScope.launch {
+            viewModel.isProcessing.collectLatest { processing ->
+                if (processing) {
+                    showProcessOverlay()
+                } else {
+                    // We keep it visible if status is "Finished" or "Cancelled" until manual exit
+                    // Actually, the ProcessFragment handles its own exit button
+                }
+            }
+        }
+    }
+
+    private fun showProcessOverlay() {
+        binding.processContainer.visibility = View.VISIBLE
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.process_container, ProcessFragment())
+            .commit()
+    }
+
+    fun hideProcessOverlay() {
+        binding.processContainer.visibility = View.GONE
+        // Also ensure ViewModel state is reset if needed
+        if (viewModel.isProcessing.value) {
+            viewModel.stopProcessing()
+        }
+    }
+
+    override fun onBackPressed() {
+        if (binding.processContainer.visibility == View.VISIBLE) {
+            // Check if processing is active before allowing exit
+            if (!viewModel.isProcessing.value) {
+                hideProcessOverlay()
+            }
+            return
+        }
+        super.onBackPressed()
     }
 
     class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
