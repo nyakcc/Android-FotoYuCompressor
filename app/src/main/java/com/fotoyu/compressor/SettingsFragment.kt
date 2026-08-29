@@ -6,8 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.fotoyu.compressor.databinding.FragmentSettingsBinding
 import androidx.core.widget.doAfterTextChanged
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -24,14 +27,14 @@ class SettingsFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         setupInputs()
-        refreshUI()
+        observeViewModel()
     }
 
     private fun setupInputs() {
         binding.editMaxWidth.doAfterTextChanged { s ->
             if (binding.editMaxWidth.hasFocus()) {
                 val num = s.toString().toIntOrNull()
-                if (num != null && num >= 100) {
+                if (num != null && num >= 480) {
                     viewModel.updateMaxWidth(num)
                 }
             }
@@ -47,21 +50,25 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    fun refreshUI() {
-        val b = _binding ?: return
-        if (!isAdded) return
-        
-        // Use a flag to avoid infinite loops if needed, but focus check is usually enough
-        if (!b.editMaxWidth.hasFocus()) {
-            val currentVal = viewModel.maxWidth.value.toString()
-            if (b.editMaxWidth.text.toString() != currentVal) {
-                b.editMaxWidth.setText(currentVal)
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.maxWidth.collectLatest { valInt ->
+                if (!binding.editMaxWidth.hasFocus()) {
+                    val s = valInt.toString()
+                    if (binding.editMaxWidth.text.toString() != s) {
+                        binding.editMaxWidth.setText(s)
+                    }
+                }
             }
         }
-        if (!b.editSplitCount.hasFocus()) {
-            val currentVal = viewModel.splitCount.value.toString()
-            if (b.editSplitCount.text.toString() != currentVal) {
-                b.editSplitCount.setText(currentVal)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.splitCount.collectLatest { valInt ->
+                if (!binding.editSplitCount.hasFocus()) {
+                    val s = valInt.toString()
+                    if (binding.editSplitCount.text.toString() != s) {
+                        binding.editSplitCount.setText(s)
+                    }
+                }
             }
         }
     }
