@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_50"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="120dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <TextView
+                android:id="@+id/titleMain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FotoYu"
+                android:textColor="@color/black"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/titleMain"
+                android:text="Compressor"
+                android:textColor="@color/gray_600"
+                android:textSize="16sp" />
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_notifications"
+                app:tint="@color/black" />
+        </RelativeLayout>
+
+        <!-- Sumber Foto Card -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FotoYu.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardBackgroundColor="@color/gray_100"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_folder"
+                        app:tint="@color/black" />
+                </com.google.android.material.card.MaterialCardView>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sumber Foto"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/sourcePathText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="middle"
+                        android:singleLine="true"
+                        android:text="Belum dipilih"
+                        android:textColor="@color/gray_600"
+                        android:textSize="14sp" />
+                </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickSource"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PILIH"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/black"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Folder Tujuan Card -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FotoYu.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardBackgroundColor="@color/gray_100"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_folder"
+                        app:tint="@color/black" />
+                </com.google.android.material.card.MaterialCardView>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Folder Tujuan"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/outputPathText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="middle"
+                        android:singleLine="true"
+                        android:text="Belum dipilih"
+                        android:textColor="@color/gray_600"
+                        android:textSize="14sp" />
+                </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickOutput"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PILIH"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/black"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Ringkasan Section -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ringkasan"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FotoYu.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:baselineAligned="false">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_photo_summary" app:tint="@color/gray_400"/>
+                    <TextView android:id="@+id/txtCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" style="@style/TextAppearance.FotoYu.LargeStats" android:textSize="15sp" android:layout_marginTop="8dp" android:maxLines="1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Foto" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_storage" app:tint="@color/gray_400"/>
+                    <TextView android:id="@+id/txtSize" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" style="@style/TextAppearance.FotoYu.LargeStats" android:textSize="15sp" android:layout_marginTop="8dp" android:maxLines="1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ukuran Asli" style="@style/TextAppearance.FotoYu.SmallLabel" android:gravity="center"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_download" app:tint="@color/gray_400"/>
+                    <TextView android:id="@+id/txtResultSize" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" style="@style/TextAppearance.FotoYu.LargeStats" android:textSize="15sp" android:layout_marginTop="8dp" android:maxLines="1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Perkiraan" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_time" app:tint="@color/gray_400"/>
+                    <TextView android:id="@+id/txtSaving" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" style="@style/TextAppearance.FotoYu.LargeStats" android:textSize="15sp" android:layout_marginTop="8dp" android:maxLines="1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hemat" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Pengaturan Kompresi Section -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pengaturan Kompresi"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/btnChangeSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="Ubah"
+                android:textColor="@color/gray_600"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSettings"
+            style="@style/Widget.FotoYu.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp">
+                    <ImageView android:id="@+id/iconWidth" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_storage" android:layout_centerVertical="true" app:tint="@color/gray_600"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/iconWidth" android:layout_marginStart="12dp" android:layout_centerVertical="true" android:text="Lebar Maksimal" android:textColor="@color/black"/>
+                    <TextView android:id="@+id/txtValWidth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toStartOf="@id/arrow1" android:layout_marginEnd="8dp" android:layout_centerVertical="true" android:text="1440 px" android:textColor="@color/gray_600"/>
+                    <ImageView android:id="@+id/arrow1" android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_right" android:layout_alignParentEnd="true" android:layout_centerVertical="true" app:tint="@color/gray_400"/>
+                </RelativeLayout>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_100" android:layout_marginHorizontal="8dp"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp">
+                    <ImageView android:id="@+id/iconSplit" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_folder" android:layout_centerVertical="true" app:tint="@color/gray_600"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toEndOf="@id/iconSplit" android:layout_marginStart="12dp" android:layout_centerVertical="true" android:text="Pisahkan Folder" android:textColor="@color/black"/>
+                    <TextView android:id="@+id/txtValSplit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toStartOf="@id/arrow2" android:layout_marginEnd="8dp" android:layout_centerVertical="true" android:text="Setiap 2.000 foto" android:textColor="@color/gray_600"/>
+                    <ImageView android:id="@+id/arrow2" android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_right" android:layout_alignParentEnd="true" android:layout_centerVertical="true" app:tint="@color/gray_400"/>
+                </RelativeLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="MULAI KOMPRESI"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="32dp"
+            app:icon="@drawable/ic_play"
+            app:iconGravity="textStart"
+            app:iconTint="@color/white"
+            app:backgroundTint="@color/black"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Foto asli tidak akan diubah.\nHanya disalin &amp; dikompresi."
+            android:textColor="@color/gray_500"
+            android:textSize="14sp"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_50"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="32dp"
+    android:paddingBottom="20dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_right"
+            android:rotation="180"
+            app:tint="@color/black" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Proses Kompresi"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.FotoYu.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/imgPreviewContainer"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:cardBackgroundColor="@color/gray_100"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:id="@+id/imgCurrent"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_photo_summary"
+                        android:padding="16dp"
+                        app:tint="@color/gray_400"
+                        android:scaleType="centerInside" />
+                </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:id="@+id/txtStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/imgPreviewContainer"
+                    android:layout_marginStart="16dp"
+                    android:text="Mengompresi foto..."
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/txtPercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="0%"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:progress="0"
+                app:trackColor="@color/gray_200"
+                app:indicatorColor="@color/black"
+                app:trackThickness="8dp"
+                app:trackCornerRadius="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView android:id="@+id/txtDiproses" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" style="@style/TextAppearance.FotoYu.LargeStats"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Diproses" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView android:id="@+id/txtTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" style="@style/TextAppearance.FotoYu.LargeStats"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Foto" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView android:id="@+id/txtRemaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--:--" style="@style/TextAppearance.FotoYu.LargeStats"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sisa Waktu" style="@style/TextAppearance.FotoYu.SmallLabel"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Preview"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            app:cardBackgroundColor="@color/gray_100"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp">
+            <ImageView android:id="@+id/prev1" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/ic_photo_summary" android:padding="20dp" app:tint="@color/gray_300" android:scaleType="centerInside" />
+        </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            app:cardBackgroundColor="@color/gray_100"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp">
+            <ImageView android:id="@+id/prev2" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/ic_photo_summary" android:padding="20dp" app:tint="@color/gray_300" android:scaleType="centerInside" />
+        </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            app:cardBackgroundColor="@color/gray_100"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp">
+            <TextView android:id="@+id/txtPreviewMore" android:layout_width="match_parent" android:layout_height="match_parent" android:text="+0" android:gravity="center" android:textColor="@color/gray_600" android:textStyle="bold" android:textSize="18sp"/>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Proses Saat Ini"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.FotoYu.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Membaca foto" android:textColor="@color/black"/>
+                <ImageView android:id="@+id/step1" android:layout_width="20dp" android:layout_height="20dp" android:layout_alignParentEnd="true" android:src="@drawable/ic_step_pending" app:tint="@color/gray_300"/>
+            </RelativeLayout>
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mengompresi" android:textColor="@color/black"/>
+                <ProgressBar android:id="@+id/step2_loading" android:layout_width="20dp" android:layout_height="20dp" android:layout_alignParentEnd="true" android:indeterminate="true" android:visibility="gone"/>
+                <ImageView android:id="@+id/step2_done" android:layout_width="20dp" android:layout_height="20dp" android:layout_alignParentEnd="true" android:src="@drawable/ic_step_pending" app:tint="@color/gray_300" android:visibility="visible"/>
+            </RelativeLayout>
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Menyimpan hasil" android:textColor="@color/black"/>
+                <ImageView android:id="@+id/step3" android:layout_width="20dp" android:layout_height="20dp" android:layout_alignParentEnd="true" android:src="@drawable/ic_step_pending" app:tint="@color/gray_300"/>
+            </RelativeLayout>
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Memisahkan folder" android:textColor="@color/black"/>
+                <ImageView android:id="@+id/step4" android:layout_width="20dp" android:layout_height="20dp" android:layout_centerVertical="true" android:layout_alignParentEnd="true" android:src="@drawable/ic_step_pending" app:tint="@color/gray_300"/>
+            </RelativeLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCancel"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="BATALKAN"
+        android:textColor="@color/black"
+        app:strokeColor="@color/black"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

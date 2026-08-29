@@ -1,9 +1,29 @@
 <resources>
-    <style name="Theme.FotoYuCompressor" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">@color/blue_600</item>
+    <style name="Theme.FotoYuCompressor" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:navigationBarColor">#FFFFFF</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="colorPrimary">#000000</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSurface">#F8F9FA</item>
+        <item name="colorOnSurface">#1A1C1E</item>
+    </style>
+
+    <style name="Widget.FotoYu.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardBackgroundColor">#FFFFFF</item>
+    </style>
+
+    <style name="TextAppearance.FotoYu.LargeStats" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="TextAppearance.FotoYu.SmallLabel" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/gray_500</item>
     </style>
 </resources>
