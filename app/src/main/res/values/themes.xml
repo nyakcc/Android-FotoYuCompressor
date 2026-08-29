@@ -12,9 +12,9 @@
 
     <style name="Widget.FotoYu.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="cardCornerRadius">24dp</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardElevation">3dp</item>
         <item name="cardBackgroundColor">#FFFFFF</item>
-        <item name="strokeColor">#F1F3F4</item>
+        <item name="strokeColor">#F2F2F2</item>
         <item name="strokeWidth">1dp</item>
     </style>
 

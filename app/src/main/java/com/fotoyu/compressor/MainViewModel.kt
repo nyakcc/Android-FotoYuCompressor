@@ -184,7 +184,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         compressToUri(item.uri, dest.uri, maxW)
                         success++
                     } catch (e: Exception) {
-                        // ignore and continue
+                        _statusText.value = "Gagal: ${e.message ?: "Unknown error"}"
+                        delay(500) // Show error for a moment
                     }
 
                     _currentProcessedCount.value = index + 1
@@ -198,12 +199,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (isActive) {
                     _currentStep.value = 4
-                    _statusText.value = "Selesai: $success dikompresi"
+                    _statusText.value = "Success: $success photos compressed"
                 } else {
-                    _statusText.value = "Dibatalkan"
+                    _statusText.value = "Cancelled"
                 }
                 
-                saveHistoryItem(success, folderCount, _totalSize.value, isActive)
+                saveHistoryItem(success, folderCount, _totalSize.value, isActive && success > 0)
                 
             } catch (e: Exception) {
                 _statusText.value = "Error: ${e.message}"
@@ -221,19 +222,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun compressToUri(src: Uri, dest: Uri, maxWidth: Int) {
         val resolver = getApplication<Application>().contentResolver
         
-        // 1. Get original dimensions and scale safely
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: throw IOException()
+        // 1. Get original dimensions and scale safely using inSampleSize
+        val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, boundsOptions) } ?: throw IOException("Cannot read source")
         
         var sample = 1
-        while (max(bounds.outWidth / sample, bounds.outHeight / sample) > maxWidth * 2) sample *= 2
+        while (max(boundsOptions.outWidth / sample, boundsOptions.outHeight / sample) > maxWidth * 2) sample *= 2
         
-        val opts = BitmapFactory.Options().apply { 
+        val decodeOptions = BitmapFactory.Options().apply { 
             inSampleSize = sample
             inPreferredConfig = Bitmap.Config.ARGB_8888 
         }
-        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: throw IOException()
+        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, decodeOptions) } ?: throw IOException("Decode failed")
         
+        // 2. Precise scaling if needed
         var scaled = bitmap
         val maxSide = max(bitmap.width, bitmap.height)
         if (maxSide > maxWidth) {
@@ -242,7 +244,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (scaled !== bitmap) bitmap.recycle()
         }
 
-        // 2. Orientation fix
+        // 3. Orientation fix
         val rotated = try {
             resolver.openInputStream(src)?.use { input ->
                 val exif = ExifInterface(input)
@@ -257,10 +259,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         
         if (rotated !== scaled) scaled.recycle()
 
-        // 3. Compress to JPEG and write to DocumentFile
-        resolver.openOutputStream(dest)?.use { os ->
+        // 4. Compress to JPEG and write
+        val outputStream = resolver.openOutputStream(dest) ?: throw IOException("Cannot write to destination")
+        outputStream.use { os ->
             if (!rotated.compress(Bitmap.CompressFormat.JPEG, 85, os)) {
-                throw IOException("Write failed")
+                throw IOException("JPEG compression failed")
             }
         }
         rotated.recycle()

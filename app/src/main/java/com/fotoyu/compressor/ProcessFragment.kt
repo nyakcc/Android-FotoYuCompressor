@@ -76,7 +76,6 @@ class ProcessFragment : Fragment() {
     }
 
     private fun updateChecklist(step: Int, black: ColorStateList, gray: ColorStateList) {
-        // Step 1: Scanning
         if (step >= 1) {
             binding.step1.setImageResource(R.drawable.ic_check_circle)
             binding.step1.imageTintList = black
@@ -85,7 +84,6 @@ class ProcessFragment : Fragment() {
             binding.step1.imageTintList = gray
         }
 
-        // Step 2: Compressing
         if (step == 2) {
             binding.step2Loading.visibility = View.VISIBLE
             binding.step2Done.visibility = View.GONE
