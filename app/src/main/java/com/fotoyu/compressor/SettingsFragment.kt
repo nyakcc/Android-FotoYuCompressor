@@ -16,15 +16,15 @@ class SettingsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        return binding.getRoot()
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        refreshUI()
         setupInputs()
+        refreshUI()
     }
 
     private fun setupInputs() {
@@ -44,13 +44,12 @@ class SettingsFragment : Fragment() {
     }
 
     fun refreshUI() {
-        val b = _binding ?: return
-        if (!isAdded) return
-        if (!b.editMaxWidth.hasFocus()) {
-            b.editMaxWidth.setText(viewModel.maxWidth.value.toString())
+        if (_binding == null || !isAdded) return
+        if (!binding.editMaxWidth.hasFocus()) {
+            binding.editMaxWidth.setText(viewModel.maxWidth.value.toString())
         }
-        if (!b.editSplitCount.hasFocus()) {
-            b.editSplitCount.setText(viewModel.splitCount.value.toString())
+        if (!binding.editSplitCount.hasFocus()) {
+            binding.editSplitCount.setText(viewModel.splitCount.value.toString())
         }
     }
 

@@ -60,8 +60,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _timeRemaining = MutableStateFlow("--:--")
     val timeRemaining: StateFlow<String> = _timeRemaining
 
-    private val _quality = MutableStateFlow(85)
-    val quality: StateFlow<Int> = _quality
+    private val _currentProcessedCount = MutableStateFlow(0)
+    val currentProcessedCount: StateFlow<Int> = _currentProcessedCount
+
+    private val _currentStep = MutableStateFlow(0)
+    val currentStep: StateFlow<Int> = _currentStep
 
     private var processingJob: Job? = null
 
@@ -138,6 +141,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         _isProcessing.value = true
         _progress.value = 0
+        _currentStep.value = 1
+        _currentProcessedCount.value = 0
         
         val maxW = _maxWidth.value
         val split = _splitCount.value
@@ -146,37 +151,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         processingJob = viewModelScope.launch(Dispatchers.IO) {
             var success = 0
             try {
-                val folderCount = (items.size + split - 1) / split
-                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException()
+                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException("Folder tujuan tidak dapat diakses")
                 
+                _currentStep.value = 2
+                val folderCount = (items.size + split - 1) / split
                 val folders = (1..folderCount).map { n ->
                     val name = "Folder_${n.toString().padStart(3, '0')}"
-                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException()
+                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException("Gagal membuat folder $name")
                 }
 
                 for ((index, item) in items.withIndex()) {
                     if (!isActive) break
+                    
+                    _statusText.value = "Mengompresi: ${item.name}"
                     val folder = folders[index / split]
                     try {
                         val base = item.name.substringBeforeLast('.', item.name)
-                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException()
+                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException("Gagal membuat file")
                         compressToUri(item.uri, dest.uri, maxW)
                         success++
-                    } catch (e: Exception) {}
+                    } catch (e: Exception) {
+                        _statusText.value = "Gagal: ${item.name}"
+                        delay(200) // Brief delay to show error
+                    }
 
+                    _currentProcessedCount.value = index + 1
                     val percent = ((index + 1).toFloat() / items.size * 100).toInt()
                     val elapsed = System.currentTimeMillis() - startTime
                     val remainingMs = if (index > 0) (elapsed / (index + 1)) * (items.size - (index + 1)) else 0L
                     
                     _progress.value = percent
-                    _statusText.value = "Compressing: ${item.name}"
                     _timeRemaining.value = formatTime(remainingMs)
+                }
+                
+                if (isActive) {
+                    _currentStep.value = 4
+                    _statusText.value = "Selesai: $success foto dikompresi"
+                } else {
+                    _statusText.value = "Dibatalkan"
                 }
                 
                 saveHistoryItem(success, folderCount, _totalSize.value, isActive)
                 
             } catch (e: Exception) {
-                _statusText.value = "Error"
+                _statusText.value = "Error: ${e.message}"
             } finally {
                 _isProcessing.value = false
             }
@@ -185,12 +203,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stopProcessing() {
         processingJob?.cancel()
+        _isProcessing.value = false
     }
 
     private fun compressToUri(src: Uri, dest: Uri, maxWidth: Int) {
         val resolver = getApplication<Application>().contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: throw IOException()
+        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: throw IOException("Gagal membuka foto")
         
         var sample = 1
         while (max(bounds.outWidth / sample, bounds.outHeight / sample) > maxWidth * 2) sample *= 2
@@ -199,7 +218,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             inSampleSize = sample
             inPreferredConfig = Bitmap.Config.ARGB_8888 
         }
-        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: throw IOException()
+        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: throw IOException("Gagal memproses foto")
         
         var scaled = bitmap
         val maxSide = max(bitmap.width, bitmap.height)
@@ -224,10 +243,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (rotated !== scaled) scaled.recycle()
 
         val bos = ByteArrayOutputStream()
-        rotated.compress(Bitmap.CompressFormat.JPEG, _quality.value, bos)
+        rotated.compress(Bitmap.CompressFormat.JPEG, 85, bos)
         val bytes = bos.toByteArray()
         rotated.recycle()
-        resolver.openOutputStream(dest)?.use { it.write(bytes) } ?: throw IOException()
+        
+        resolver.openOutputStream(dest)?.use { it.write(bytes) } ?: throw IOException("Gagal menyimpan file")
     }
 
     private fun rotate(src: Bitmap, deg: Float): Bitmap {
@@ -236,8 +256,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun formatTime(ms: Long): String {
-        val s = ms / 1000
-        return String.format(Locale.US, "%02d:%02d", s / 60, s % 60)
+        val totalSecs = ms / 1000
+        val mins = totalSecs / 60
+        val secs = totalSecs % 60
+        return String.format(Locale.US, "%02d:%02d", mins, secs)
     }
 
     fun loadHistory() {
