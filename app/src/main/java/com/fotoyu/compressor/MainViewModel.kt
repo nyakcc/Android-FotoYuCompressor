@@ -62,7 +62,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentProcessedCount = MutableStateFlow(0)
     val currentProcessedCount: StateFlow<Int> = _currentProcessedCount
 
-    // Steps: 0=Idle, 1=Scanning, 2=Compressing, 4=Done
     private val _currentStep = MutableStateFlow(0)
     val currentStep: StateFlow<Int> = _currentStep
 
@@ -70,6 +69,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         loadHistory()
+    }
+
+    fun resetData() {
+        _sourceUri.value = null
+        _outputUri.value = null
+        _photos.value = emptyList()
+        _totalSize.value = 0L
+        _progress.value = 0
+        _statusText.value = ""
+        _currentProcessedCount.value = 0
+        _currentStep.value = 0
+        _timeRemaining.value = "--:--"
     }
 
     fun updateMaxWidth(value: Int) {
@@ -153,13 +164,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         processingJob = viewModelScope.launch(Dispatchers.IO) {
             var success = 0
             try {
-                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException("Output folder error")
+                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException("Output error")
                 
                 _currentStep.value = 2
                 val folderCount = (items.size + split - 1) / split
                 val folders = (1..folderCount).map { n ->
                     val name = "Folder_${n.toString().padStart(3, '0')}"
-                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException("Folder creation error")
+                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException("Folder create error")
                 }
 
                 for ((index, item) in items.withIndex()) {
@@ -169,11 +180,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val folder = folders[index / split]
                     try {
                         val base = item.name.substringBeforeLast('.', item.name)
-                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException("File creation error")
+                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException("File create error")
                         compressToUri(item.uri, dest.uri, maxW)
                         success++
                     } catch (e: Exception) {
-                        _statusText.value = "Gagal: ${item.name}"
+                        // ignore and continue
                     }
 
                     _currentProcessedCount.value = index + 1
@@ -187,7 +198,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (isActive) {
                     _currentStep.value = 4
-                    _statusText.value = "Selesai: $success foto dikompresi"
+                    _statusText.value = "Selesai: $success dikompresi"
                 } else {
                     _statusText.value = "Dibatalkan"
                 }
@@ -210,9 +221,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun compressToUri(src: Uri, dest: Uri, maxWidth: Int) {
         val resolver = getApplication<Application>().contentResolver
         
-        // Use standard BitmapFactory for robustness
-        val inputStream = resolver.openInputStream(src) ?: throw IOException("Open failed")
-        val bitmap = inputStream.use { BitmapFactory.decodeStream(it) } ?: throw IOException("Decode failed")
+        // 1. Get original dimensions and scale safely
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: throw IOException()
+        
+        var sample = 1
+        while (max(bounds.outWidth / sample, bounds.outHeight / sample) > maxWidth * 2) sample *= 2
+        
+        val opts = BitmapFactory.Options().apply { 
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.ARGB_8888 
+        }
+        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: throw IOException()
         
         var scaled = bitmap
         val maxSide = max(bitmap.width, bitmap.height)
@@ -222,7 +242,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (scaled !== bitmap) bitmap.recycle()
         }
 
-        // Apply Orientation
+        // 2. Orientation fix
         val rotated = try {
             resolver.openInputStream(src)?.use { input ->
                 val exif = ExifInterface(input)
@@ -237,11 +257,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         
         if (rotated !== scaled) scaled.recycle()
 
-        // Compress to JPEG
-        val outputStream = resolver.openOutputStream(dest) ?: throw IOException("Write failed")
-        outputStream.use { os ->
+        // 3. Compress to JPEG and write to DocumentFile
+        resolver.openOutputStream(dest)?.use { os ->
             if (!rotated.compress(Bitmap.CompressFormat.JPEG, 85, os)) {
-                throw IOException("Compression failed")
+                throw IOException("Write failed")
             }
         }
         rotated.recycle()

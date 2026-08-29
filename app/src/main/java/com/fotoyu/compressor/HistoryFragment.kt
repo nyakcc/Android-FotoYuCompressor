@@ -12,6 +12,7 @@ import com.fotoyu.compressor.databinding.FragmentHistoryBinding
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.core.widget.doAfterTextChanged
 
 class HistoryFragment : Fragment() {
     private var _binding: FragmentHistoryBinding? = null
@@ -30,6 +31,7 @@ class HistoryFragment : Fragment() {
 
         setupRecyclerView()
         setupTabs()
+        setupSearch()
         observeViewModel()
     }
 
@@ -52,14 +54,14 @@ class HistoryFragment : Fragment() {
         })
     }
 
+    private fun setupSearch() {
+        binding.editSearch.doAfterTextChanged { filterHistory() }
+    }
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.history.collectLatest { filterHistory() }
         }
-    }
-
-    fun loadHistory() {
-        viewModel.loadHistory()
     }
 
     private fun filterHistory() {
@@ -67,13 +69,16 @@ class HistoryFragment : Fragment() {
 
         val allItems = viewModel.history.value
         val tabIndex = binding.tabHistory.selectedTabPosition
+        val query = binding.editSearch.text.toString().lowercase()
         
         val filtered = allItems.filter { item ->
-            when (tabIndex) {
+            val matchesTab = when (tabIndex) {
                 1 -> item.isSuccess
                 2 -> !item.isSuccess
                 else -> true
             }
+            val matchesSearch = item.sourcePath.lowercase().contains(query) || item.date.lowercase().contains(query)
+            matchesTab && matchesSearch
         }
         adapter?.updateItems(filtered)
     }

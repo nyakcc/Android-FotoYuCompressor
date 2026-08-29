@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import com.fotoyu.compressor.databinding.FragmentProcessBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 class ProcessFragment : Fragment() {
     private var _binding: FragmentProcessBinding? = null
@@ -62,12 +61,14 @@ class ProcessFragment : Fragment() {
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.isProcessing.collectLatest { processing ->
-                binding.btnCancel.text = if (processing) "BATALKAN" else "SELESAI"
-                binding.btnCancel.setOnClickListener { 
-                    if (processing) {
-                        viewModel.stopProcessing()
-                    } else {
-                        (activity as? MainActivity)?.hideProcessOverlay()
+                if (processing) {
+                    binding.btnCancel.text = "BATALKAN"
+                    binding.btnCancel.setOnClickListener { viewModel.stopProcessing() }
+                } else {
+                    binding.btnCancel.text = "SELESAI"
+                    binding.btnCancel.setOnClickListener { 
+                        viewModel.resetData()
+                        (activity as? MainActivity)?.hideProcessOverlay() 
                     }
                 }
             }
@@ -88,25 +89,21 @@ class ProcessFragment : Fragment() {
         if (step == 2) {
             binding.step2Loading.visibility = View.VISIBLE
             binding.step2Done.visibility = View.GONE
-        } else if (step > 2) {
+        } else if (step >= 4) {
             binding.step2Loading.visibility = View.GONE
             binding.step2Done.visibility = View.VISIBLE
             binding.step2Done.setImageResource(R.drawable.ic_check_circle)
             binding.step2Done.imageTintList = black
-        } else {
-            binding.step2Loading.visibility = View.GONE
-            binding.step2Done.visibility = View.VISIBLE
-            binding.step2Done.setImageResource(R.drawable.ic_step_pending)
-            binding.step2Done.imageTintList = gray
-        }
-
-        // Step 3: Saving (merged with Step 2 usually, but let's handle if step 4 is reached)
-        if (step >= 4) {
+            
             binding.step3.setImageResource(R.drawable.ic_check_circle)
             binding.step3.imageTintList = black
             binding.step4.setImageResource(R.drawable.ic_check_circle)
             binding.step4.imageTintList = black
         } else {
+            binding.step2Loading.visibility = View.GONE
+            binding.step2Done.visibility = View.VISIBLE
+            binding.step2Done.setImageResource(R.drawable.ic_step_pending)
+            binding.step2Done.imageTintList = gray
             binding.step3.setImageResource(R.drawable.ic_step_pending)
             binding.step3.imageTintList = gray
             binding.step4.setImageResource(R.drawable.ic_step_pending)
