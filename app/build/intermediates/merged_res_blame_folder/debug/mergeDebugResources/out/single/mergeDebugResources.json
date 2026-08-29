@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.fotoyu.compressor.app-debug-26:/drawable_ic_launcher.xml.flat",
+        "source": "com.fotoyu.compressor.app-main-28:/drawable/ic_launcher.xml"
+    },
+    {
+        "merged": "com.fotoyu.compressor.app-debug-26:/layout_activity_main.xml.flat",
+        "source": "com.fotoyu.compressor.app-main-28:/layout/activity_main.xml"
+    }
+]

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+        <TextView android:text="FotoYu Compressor" android:textSize="26sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:text="Compress foto preview dari folder dan semua subfolder" android:layout_marginTop="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+        <Button android:id="@+id/sourceButton" android:text="Pilih Folder Sumber" android:layout_marginTop="20dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/sourceText" android:text="Belum dipilih" android:paddingTop="6dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <Button android:id="@+id/outputButton" android:text="Pilih Folder Tujuan" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/outputText" android:text="Belum dipilih" android:paddingTop="6dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView android:text="Maksimum foto per folder" android:layout_marginTop="18dp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <EditText android:id="@+id/maxFiles" android:text="2000" android:inputType="number" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView android:text="Lebar maksimum preview (px)" android:layout_marginTop="10dp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <EditText android:id="@+id/maxWidth" android:text="1280" android:inputType="number" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView android:id="@+id/scanResult" android:text="Belum scan" android:textStyle="bold" android:layout_marginTop="18dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <Button android:id="@+id/scanButton" android:text="SCAN FOTO" android:enabled="false" android:layout_marginTop="10dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <Button android:id="@+id/startButton" android:text="MULAI COPY + COMPRESS" android:enabled="false" android:layout_marginTop="10dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <Button android:id="@+id/cancelButton" android:text="BATALKAN" android:enabled="false" android:layout_marginTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:max="100" android:progress="0" android:layout_marginTop="18dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/status" android:text="Siap." android:layout_marginTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/log" android:text="" android:fontFamily="monospace" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    </LinearLayout>
+</ScrollView>
