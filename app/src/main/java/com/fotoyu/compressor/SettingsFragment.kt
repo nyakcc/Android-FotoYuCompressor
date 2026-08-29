@@ -29,27 +29,40 @@ class SettingsFragment : Fragment() {
 
     private fun setupInputs() {
         binding.editMaxWidth.doAfterTextChanged { s ->
-            val num = s.toString().toIntOrNull()
-            if (num != null && num >= 480) {
-                viewModel.updateMaxWidth(num)
+            if (binding.editMaxWidth.hasFocus()) {
+                val num = s.toString().toIntOrNull()
+                if (num != null && num >= 100) {
+                    viewModel.updateMaxWidth(num)
+                }
             }
         }
 
         binding.editSplitCount.doAfterTextChanged { s ->
-            val num = s.toString().toIntOrNull()
-            if (num != null && num >= 1) {
-                viewModel.updateSplitCount(num)
+            if (binding.editSplitCount.hasFocus()) {
+                val num = s.toString().toIntOrNull()
+                if (num != null && num >= 1) {
+                    viewModel.updateSplitCount(num)
+                }
             }
         }
     }
 
     fun refreshUI() {
-        if (_binding == null || !isAdded) return
-        if (!binding.editMaxWidth.hasFocus()) {
-            binding.editMaxWidth.setText(viewModel.maxWidth.value.toString())
+        val b = _binding ?: return
+        if (!isAdded) return
+        
+        // Use a flag to avoid infinite loops if needed, but focus check is usually enough
+        if (!b.editMaxWidth.hasFocus()) {
+            val currentVal = viewModel.maxWidth.value.toString()
+            if (b.editMaxWidth.text.toString() != currentVal) {
+                b.editMaxWidth.setText(currentVal)
+            }
         }
-        if (!binding.editSplitCount.hasFocus()) {
-            binding.editSplitCount.setText(viewModel.splitCount.value.toString())
+        if (!b.editSplitCount.hasFocus()) {
+            val currentVal = viewModel.splitCount.value.toString()
+            if (b.editSplitCount.text.toString() != currentVal) {
+                b.editSplitCount.setText(currentVal)
+            }
         }
     }
 

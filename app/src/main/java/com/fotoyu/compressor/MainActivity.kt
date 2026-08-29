@@ -1,6 +1,5 @@
 package com.fotoyu.compressor
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -35,13 +34,17 @@ class MainActivity : AppCompatActivity() {
         val adapter = ViewPagerAdapter(this)
         binding.viewPager.adapter = adapter
         binding.viewPager.isUserInputEnabled = false
+        binding.viewPager.offscreenPageLimit = 2 // Keep all 3 tabs in memory
     }
 
     private fun setupBottomNav() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> binding.viewPager.setCurrentItem(0, false)
-                R.id.navigation_history -> binding.viewPager.setCurrentItem(1, false)
+                R.id.navigation_history -> {
+                    viewModel.loadHistory() // Refresh history data
+                    binding.viewPager.setCurrentItem(1, false)
+                }
                 R.id.navigation_settings -> binding.viewPager.setCurrentItem(2, false)
             }
             true
@@ -53,9 +56,6 @@ class MainActivity : AppCompatActivity() {
             viewModel.isProcessing.collectLatest { processing ->
                 if (processing) {
                     showProcessOverlay()
-                } else {
-                    // We keep it visible if status is "Finished" or "Cancelled" until manual exit
-                    // Actually, the ProcessFragment handles its own exit button
                 }
             }
         }
@@ -70,15 +70,16 @@ class MainActivity : AppCompatActivity() {
 
     fun hideProcessOverlay() {
         binding.processContainer.visibility = View.GONE
-        // Also ensure ViewModel state is reset if needed
-        if (viewModel.isProcessing.value) {
-            viewModel.stopProcessing()
+        // Remove the fragment to stop observation
+        val fragment = supportFragmentManager.findFragmentById(R.id.process_container)
+        if (fragment != null) {
+            supportFragmentManager.beginTransaction().remove(fragment).commit()
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (binding.processContainer.visibility == View.VISIBLE) {
-            // Check if processing is active before allowing exit
             if (!viewModel.isProcessing.value) {
                 hideProcessOverlay()
             }
