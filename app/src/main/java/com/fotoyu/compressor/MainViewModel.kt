@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.graphics.scale
-import android.content.Intent
 import androidx.documentfile.provider.DocumentFile
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -98,11 +96,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setSourceFolder(uri: Uri) {
-        try {
-            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            getApplication<Application>().contentResolver.takePersistableUriPermission(uri, takeFlags)
-        } catch (_: Exception) {}
-        
         _sourceUri.value = uri
         _photos.value = emptyList()
         _totalSize.value = 0L
@@ -110,11 +103,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setOutputFolder(uri: Uri) {
-        try {
-            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            getApplication<Application>().contentResolver.takePersistableUriPermission(uri, takeFlags)
-        } catch (_: Exception) {}
-        
         _outputUri.value = uri
     }
 
@@ -129,7 +117,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _photos.value = found
                 _totalSize.value = currentSize
             } catch (e: Exception) {
-                _statusText.value = "Scan error"
+                _statusText.value = "Scan error: ${e.localizedMessage ?: "Unknown"}"
             }
         }
     }
@@ -176,29 +164,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         processingJob = viewModelScope.launch(Dispatchers.IO) {
             var success = 0
             try {
-                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException("Destination access error")
+                val parent = DocumentFile.fromTreeUri(getApplication(), outRoot) ?: throw IOException("Folder tujuan tidak dapat dibuka")
                 
                 _currentStep.value = 2
                 val folderCount = (items.size + split - 1) / split
                 val folders = (1..folderCount).map { n ->
                     val name = "Folder_${n.toString().padStart(3, '0')}"
-                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException("Folder create error")
+                    parent.findFile(name) ?: parent.createDirectory(name) ?: throw IOException("Gagal membuat folder $name")
                 }
 
                 for ((index, item) in items.withIndex()) {
                     if (!isActive) break
                     
-                    _statusText.value = "Processing: ${item.name}"
+                    _statusText.value = "Mengompresi: ${item.name}"
                     val folder = folders[index / split]
                     try {
                         val base = item.name.substringBeforeLast('.', item.name)
-                        // Ensure unique filename
-                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException("File creation failed")
+                        val dest = folder.createFile("image/jpeg", "$base.jpg") ?: throw IOException("Gagal membuat file output")
                         compressToUri(item.uri, dest.uri, maxW)
                         success++
                     } catch (e: Exception) {
-                        _statusText.value = "Failed: ${item.name}"
-                        delay(500)
+                        // Keep going if one photo fails
                     }
 
                     _currentProcessedCount.value = index + 1
@@ -212,15 +198,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (isActive) {
                     _currentStep.value = 4
-                    _statusText.value = "Completed: $success files"
+                    _statusText.value = "Selesai: $success foto diproses"
                 } else {
-                    _statusText.value = "Cancelled"
+                    _statusText.value = "Dibatalkan"
                 }
                 
                 saveHistoryItem(success, folderCount, _totalSize.value, isActive && success > 0)
                 
             } catch (e: Exception) {
-                _statusText.value = "Error: ${e.message}"
+                _statusText.value = "Gagal: ${e.localizedMessage ?: "Unknown"}"
             } finally {
                 _isProcessing.value = false
             }
@@ -235,70 +221,40 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun compressToUri(src: Uri, dest: Uri, maxWidth: Int) {
         val resolver = getApplication<Application>().contentResolver
         
-        // 1. Get original bounds
-        val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, boundsOptions) } ?: throw IOException("Source access error")
+        // Use simpler stream-based logic like in the first versions
+        val bitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it) } ?: throw IOException("Gagal membaca foto asal")
         
-        // 2. Efficient decode using sample size
-        var sample = 1
-        while (max(boundsOptions.outWidth / sample, boundsOptions.outHeight / sample) > maxWidth * 2) sample *= 2
-        
-        val decodeOptions = BitmapFactory.Options().apply { 
-            inSampleSize = sample
-            inPreferredConfig = Bitmap.Config.ARGB_8888 
+        var scaled = bitmap
+        val maxSide = max(bitmap.width, bitmap.height)
+        if (maxSide > maxWidth) {
+            val ratio = maxWidth.toFloat() / maxSide.toFloat()
+            scaled = bitmap.scale((bitmap.width * ratio).roundToInt(), (bitmap.height * ratio).roundToInt(), true)
+            if (scaled !== bitmap) bitmap.recycle()
         }
-        val originalBitmap = resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, decodeOptions) } ?: throw IOException("Decode error")
-        
-        try {
-            // 3. Scale precisely to maxWidth
-            var currentBitmap = originalBitmap
-            val maxSide = max(currentBitmap.width, currentBitmap.height)
-            if (maxSide > maxWidth) {
-                val ratio = maxWidth.toFloat() / maxSide.toFloat()
-                val targetW = (currentBitmap.width * ratio).roundToInt()
-                val targetH = (currentBitmap.height * ratio).roundToInt()
-                currentBitmap = currentBitmap.scale(targetW, targetH, true)
-                if (currentBitmap != originalBitmap) originalBitmap.recycle()
-            }
 
-            // 4. Orientation fix
-            var finalBitmap = currentBitmap
-            try {
-                resolver.openInputStream(src)?.use { input ->
-                    val exif = ExifInterface(input)
-                    val rotation = when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
-                        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-                        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-                        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-                        else -> 0f
-                    }
-                    if (rotation != 0f) {
-                        finalBitmap = rotate(currentBitmap, rotation)
-                        if (finalBitmap != currentBitmap) currentBitmap.recycle()
-                    }
+        // Apply Orientation
+        val rotated = try {
+            resolver.openInputStream(src)?.use { input ->
+                val exif = ExifInterface(input)
+                when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> rotate(scaled, 90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> rotate(scaled, 180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> rotate(scaled, 270f)
+                    else -> scaled
                 }
-            } catch (_: Exception) {}
+            } ?: scaled
+        } catch (e: Exception) { scaled }
+        
+        if (rotated !== scaled) scaled.recycle()
 
-            // 5. Compress to Byte Array first (to avoid partial writes)
-            val bos = ByteArrayOutputStream()
-            if (!finalBitmap.compress(Bitmap.CompressFormat.JPEG, 85, bos)) {
-                throw IOException("JPEG compression error")
+        // Write directly to output stream
+        resolver.openOutputStream(dest)?.use { os ->
+            if (!rotated.compress(Bitmap.CompressFormat.JPEG, 85, os)) {
+                throw IOException("Gagal kompresi JPEG")
             }
-            val data = bos.toByteArray()
-            
-            // 6. Final write to destination
-            resolver.openOutputStream(dest)?.use { os ->
-                os.write(data)
-                os.flush()
-            } ?: throw IOException("Destination write error")
-            
-            finalBitmap.recycle()
-            if (finalBitmap != originalBitmap && !originalBitmap.isRecycled) originalBitmap.recycle()
-
-        } catch (e: Exception) {
-            if (!originalBitmap.isRecycled) originalBitmap.recycle()
-            throw e
-        }
+        } ?: throw IOException("Gagal membuka folder tujuan")
+        
+        rotated.recycle()
     }
 
     private fun rotate(src: Bitmap, deg: Float): Bitmap {

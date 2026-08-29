@@ -19,11 +19,17 @@ class HomeFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
 
     private val sourceLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let { viewModel.setSourceFolder(it) }
+        uri?.let { 
+            (activity as? MainActivity)?.onFolderSelected(it)
+            viewModel.setSourceFolder(it) 
+        }
     }
 
     private val outputLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let { viewModel.setOutputFolder(it) }
+        uri?.let { 
+            (activity as? MainActivity)?.onFolderSelected(it)
+            viewModel.setOutputFolder(it) 
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -93,8 +99,8 @@ class HomeFragment : Fragment() {
             b.txtSaving.text = "$saving%"
         }
 
-        b.sourcePathText.text = viewModel.sourceUri.value?.path?.substringAfterLast(':') ?: getString(R.string.source_not_selected)
-        b.outputPathText.text = viewModel.outputUri.value?.path?.substringAfterLast(':') ?: getString(R.string.source_not_selected)
+        b.sourcePathText.text = viewModel.sourceUri.value?.path?.substringAfterLast(':') ?: "Not selected"
+        b.outputPathText.text = viewModel.outputUri.value?.path?.substringAfterLast(':') ?: "Not selected"
         
         b.txtValWidth.text = "${viewModel.maxWidth.value} px"
         b.txtValSplit.text = "Setiap ${String.format(Locale.US, "%,d", viewModel.splitCount.value).replace(',', '.')} foto"

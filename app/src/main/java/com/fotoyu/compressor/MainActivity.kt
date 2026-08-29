@@ -1,5 +1,6 @@
 package com.fotoyu.compressor
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = ViewPagerAdapter(this)
         binding.viewPager.adapter = adapter
         binding.viewPager.isUserInputEnabled = false
-        binding.viewPager.offscreenPageLimit = 2 // Keep all 3 tabs in memory
+        binding.viewPager.offscreenPageLimit = 2
     }
 
     private fun setupBottomNav() {
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_home -> binding.viewPager.setCurrentItem(0, false)
                 R.id.navigation_history -> {
-                    viewModel.loadHistory() // Refresh history data
+                    viewModel.loadHistory()
                     binding.viewPager.setCurrentItem(1, false)
                 }
                 R.id.navigation_settings -> binding.viewPager.setCurrentItem(2, false)
@@ -70,11 +71,17 @@ class MainActivity : AppCompatActivity() {
 
     fun hideProcessOverlay() {
         binding.processContainer.visibility = View.GONE
-        // Remove the fragment to stop observation
         val fragment = supportFragmentManager.findFragmentById(R.id.process_container)
         if (fragment != null) {
             supportFragmentManager.beginTransaction().remove(fragment).commit()
         }
+    }
+
+    fun onFolderSelected(uri: android.net.Uri) {
+        try {
+            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            contentResolver.takePersistableUriPermission(uri, takeFlags)
+        } catch (_: Exception) {}
     }
 
     @Deprecated("Deprecated in Java")
